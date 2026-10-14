@@ -12,3 +12,7 @@ Keep changes focused. Explain the workflow problem and provide a reproducible sc
 8. Describe validation, relevant risks and limitations in the PR.
 
 Use Node built-ins where possible. Keep the CLI dependency-free and cross-platform. Do not add install hooks, telemetry or automatic publication.
+
+The installer exposes an in-process Node diagnostics channel, `techtalks-skills:mutation`, with `before`, `after` and `rollback` phases plus root, file and action. Use synchronous subscribers to reproduce edits at precise transaction boundaries in tests instead of depending on operating-system filesystem notification timing. These events are local instrumentation, not network telemetry. Keep subscribers read-only outside tests; subscriber exceptions can interrupt the process.
+
+On Windows, directory-link tests use junctions, which do not require Developer Mode. The file-symlink test is skipped only if the OS explicitly denies creation; it remains active on capable Windows environments and other platforms. No installer safety check is disabled.

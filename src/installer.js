@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { channel } from 'node:diagnostics_channel';
 import { lstat, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { catalog, skillNames, targets, version } from './catalog.js';
@@ -6,6 +7,7 @@ import { catalog, skillNames, targets, version } from './catalog.js';
 const stateDirectory = '.techtalks-skills';
 const manifestName = `${stateDirectory}/manifest.json`;
 const lockName = `${stateDirectory}/install.lock`;
+const mutationEvents = channel('techtalks-skills:mutation');
 export const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
 async function info(file) {
@@ -144,17 +146,20 @@ async function transact(root, { names, dryRun, remove }) {
   const completed = [];
   try {
     for (const item of planned) {
+      mutationEvents.publish({ phase: 'before', root, file: item.file, action: item.action });
       if (item.action === 'remove') {
         await assertCurrent(root, item.file, item.previous);
         await rm(await safePath(root, item.file));
       } else await atomicWrite(root, item.file, item.content, item.previous);
       completed.push(item);
+      mutationEvents.publish({ phase: 'after', root, file: item.file, action: item.action });
     }
     await atomicWrite(root, manifestName, `${JSON.stringify(next, null, 2)}\n`, oldManifest);
   } catch (error) {
     const failures = [];
     for (const item of completed.reverse()) {
       try {
+        mutationEvents.publish({ phase: 'rollback', root, file: item.file, action: item.action });
         const written = item.action === 'remove' ? null : item.content;
         if (item.previous) await atomicWrite(root, item.file, item.previous, written);
         else {

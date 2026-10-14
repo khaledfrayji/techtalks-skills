@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, mkdir, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { watch, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
+import { channel } from 'node:diagnostics_channel';
 import path from 'node:path';
 import { install, status, hash } from '../src/installer.js';
 import { catalog, targets } from '../src/catalog.js';
@@ -114,15 +115,27 @@ test('manifest cannot manage paths outside known skill directories', async t => 
   await assert.rejects(install(root, { remove: true }), /Invalid installation manifest/);
 });
 
-test('symbolic-link destination directories and files are rejected', async t => {
+test('linked destination directories are rejected, including Windows junctions', async t => {
   const root = await project(t);
   const outside = await project(t);
-  await symlink(outside, path.join(root, '.agents'), 'dir');
+  await symlink(outside, path.join(root, '.agents'), process.platform === 'win32' ? 'junction' : 'dir');
   await assert.rejects(install(root), /symbolic link/);
-  await rm(path.join(root, '.agents'));
+});
+
+test('symbolic-link destination files are rejected when the OS permits creating them', async t => {
+  const root = await project(t);
+  const outside = await project(t);
   await mkdir(path.dirname(path.join(root, scopeFile)), { recursive: true });
   await writeFile(path.join(outside, 'target'), 'untouched');
-  await symlink(path.join(outside, 'target'), path.join(root, scopeFile), 'file');
+  try {
+    await symlink(path.join(outside, 'target'), path.join(root, scopeFile), 'file');
+  } catch (error) {
+    if (process.platform === 'win32' && ['EPERM', 'EACCES'].includes(error.code)) {
+      t.skip('Windows requires Developer Mode or elevated privileges to create a file symlink. Directory junction protection is still tested.');
+      return;
+    }
+    throw error;
+  }
   await assert.rejects(install(root), /symbolic link/);
   assert.equal(await readFile(path.join(outside, 'target'), 'utf8'), 'untouched');
 });
@@ -176,15 +189,51 @@ test('an edit after preflight is preserved and previous writes are rolled back',
   await writeFile(mf, JSON.stringify(state));
   const target = path.join(root, '.claude/skills/scope/references/project-contract.md');
   let edited = false;
-  const watcher = watch(path.dirname(path.join(root, scopeFile)), (event, filename) => {
-    if (event === 'rename' && String(filename) === 'SKILL.md' && !edited) {
+  const events = channel('techtalks-skills:mutation');
+  const observer = event => {
+    if (event.root === root && event.phase === 'after' && event.file === scopeFile && !edited) {
       edited = true;
       writeFileSync(target, 'concurrent developer edit');
     }
-  });
-  t.after(() => watcher.close());
+  };
+  events.subscribe(observer);
+  t.after(() => events.unsubscribe(observer));
   await assert.rejects(install(root, { names: ['scope'] }), /File changed during installation/);
   assert.equal(edited, true);
   assert.equal(await readFile(target, 'utf8'), 'concurrent developer edit');
   assert.equal(await readFile(path.join(root, scopeFile), 'utf8'), 'older release');
+});
+
+test('a file created after preflight is not replaced', async t => {
+  const root = await project(t);
+  const events = channel('techtalks-skills:mutation');
+  const observer = event => {
+    if (event.root === root && event.phase === 'before' && event.file === scopeFile) {
+      writeFileSync(path.join(root, scopeFile), 'new developer file');
+    }
+  };
+  // The parent must exist for the simulated editor to create its file.
+  await mkdir(path.dirname(path.join(root, scopeFile)), { recursive: true });
+  events.subscribe(observer);
+  t.after(() => events.unsubscribe(observer));
+  await assert.rejects(install(root, { names: ['scope'] }), /File changed during installation/);
+  assert.equal(await readFile(path.join(root, scopeFile), 'utf8'), 'new developer file');
+});
+
+test('rollback preserves edits to a file already written by the installer', async t => {
+  const root = await project(t);
+  const second = '.claude/skills/scope/SKILL.md';
+  await mkdir(path.dirname(path.join(root, second)), { recursive: true });
+  const events = channel('techtalks-skills:mutation');
+  const observer = event => {
+    if (event.root === root && event.phase === 'after' && event.file === scopeFile) {
+      writeFileSync(path.join(root, scopeFile), 'edit after installer write');
+      writeFileSync(path.join(root, second), 'new conflicting file');
+    }
+  };
+  events.subscribe(observer);
+  t.after(() => events.unsubscribe(observer));
+  await assert.rejects(install(root, { names: ['scope'] }), /Rollback incomplete/);
+  assert.equal(await readFile(path.join(root, scopeFile), 'utf8'), 'edit after installer write');
+  assert.equal(await readFile(path.join(root, second), 'utf8'), 'new conflicting file');
 });
