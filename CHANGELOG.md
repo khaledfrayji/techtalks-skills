@@ -4,6 +4,7 @@
 
 - Accept Windows CRLF and mixed line endings during release validation, with regression coverage and consistent Git checkout endings.
 - Use deterministic mutation events for concurrent-edit regression tests and test Windows directory junctions without requiring administrator privileges.
+- Trigger concurrent-edit tests at the affected file's write boundary, independently of platform directory ordering.
 
 - Ten portable development workflows with shared context conventions and honest tool limitations.
 - One automatic installer for shared agent discovery and Claude Code project skills.

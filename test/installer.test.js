@@ -191,7 +191,7 @@ test('an edit after preflight is preserved and previous writes are rolled back',
   let edited = false;
   const events = channel('techtalks-skills:mutation');
   const observer = event => {
-    if (event.root === root && event.phase === 'after' && event.file === scopeFile && !edited) {
+    if (event.root === root && event.phase === 'before' && event.file === '.claude/skills/scope/references/project-contract.md' && !edited) {
       edited = true;
       writeFileSync(target, 'concurrent developer edit');
     }
@@ -202,6 +202,7 @@ test('an edit after preflight is preserved and previous writes are rolled back',
   assert.equal(edited, true);
   assert.equal(await readFile(target, 'utf8'), 'concurrent developer edit');
   assert.equal(await readFile(path.join(root, scopeFile), 'utf8'), 'older release');
+  assert.equal(await readFile(path.join(root, '.agents/skills/scope/references/project-contract.md'), 'utf8'), 'older release');
 });
 
 test('a file created after preflight is not replaced', async t => {
