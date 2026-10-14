@@ -1,0 +1,4 @@
+interface:
+  display_name: "TechTalks Architect"
+  short_description: "Design or revise software architecture and document consequenti"
+  default_prompt: "Use $architect to guide the requested architect workflow."

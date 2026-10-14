@@ -1,0 +1,4 @@
+interface:
+  display_name: "TechTalks Audit"
+  short_description: "Inspect an existing repository to establish observed stack, arc"
+  default_prompt: "Use $audit to guide the requested audit workflow."

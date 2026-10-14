@@ -1,0 +1,4 @@
+interface:
+  display_name: "TechTalks Document"
+  short_description: "Write accurate developer-facing documentation, PR descriptions"
+  default_prompt: "Use $document to guide the requested document workflow."

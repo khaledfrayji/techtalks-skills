@@ -1,0 +1,4 @@
+interface:
+  display_name: "TechTalks Verify"
+  short_description: "Run a real application and verify user flows against acceptance"
+  default_prompt: "Use $verify to guide the requested verify workflow."

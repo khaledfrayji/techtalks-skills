@@ -1,0 +1,4 @@
+interface:
+  display_name: "TechTalks Sync"
+  short_description: "Reconcile project context, progress and architecture documentat"
+  default_prompt: "Use $sync to guide the requested sync workflow."

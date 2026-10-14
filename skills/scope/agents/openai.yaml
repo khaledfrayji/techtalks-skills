@@ -1,0 +1,4 @@
+interface:
+  display_name: "TechTalks Scope"
+  short_description: "Define project requirements, V1 boundaries, acceptance criteria"
+  default_prompt: "Use $scope to guide the requested scope workflow."

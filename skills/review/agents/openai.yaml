@@ -1,0 +1,4 @@
+interface:
+  display_name: "TechTalks Review"
+  short_description: "Review a specified diff for actionable correctness, security, d"
+  default_prompt: "Use $review to guide the requested review workflow."

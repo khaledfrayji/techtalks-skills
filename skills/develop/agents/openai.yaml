@@ -1,0 +1,4 @@
+interface:
+  display_name: "TechTalks Develop"
+  short_description: "Implement a scoped feature or change using existing project con"
+  default_prompt: "Use $develop to guide the requested develop workflow."

@@ -1,0 +1,9 @@
+# Changelog
+
+## 0.1.0 - Unreleased
+
+- Ten portable development workflows with shared context conventions and honest tool limitations.
+- One automatic installer for shared agent discovery and Claude Code project skills.
+- Content-hash ownership, conflict protection, selected workflows, dry-run, updates, removal and integrity checks.
+- Exclusive mutation lock, safe destination paths and rollback after caught write failures.
+- Dependency-free Node.js CLI, automated tests and cross-platform CI configuration.

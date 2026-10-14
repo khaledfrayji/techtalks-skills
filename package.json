@@ -1,0 +1,21 @@
+{
+  "name": "techtalks-skills",
+  "version": "0.1.0",
+  "description": "Ten practical software development workflows for AI coding agents. One installer, shared skills.",
+  "type": "module",
+  "bin": { "techtalks-skills": "bin/cli.js" },
+  "files": ["bin/", "src/", "skills/", "docs/", "README.md", "LICENSE", "CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md"],
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test",
+    "check": "node scripts/check.js",
+    "prepublishOnly": "npm run check && npm test"
+  },
+  "repository": { "type": "git", "url": "git+https://github.com/khaledfrayji/techtalks-skills.git" },
+  "homepage": "https://github.com/khaledfrayji/techtalks-skills#readme",
+  "bugs": { "url": "https://github.com/khaledfrayji/techtalks-skills/issues" },
+  "author": "TechTalks",
+  "license": "MIT",
+  "keywords": ["agent-skills", "ai", "codex", "copilot", "claude-code", "cursor", "techtalks"],
+  "publishConfig": { "access": "public" }
+}

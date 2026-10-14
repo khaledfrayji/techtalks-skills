@@ -1,0 +1,4 @@
+interface:
+  display_name: "TechTalks Test"
+  short_description: "Design and implement automated tests for observable contracts,"
+  default_prompt: "Use $test to guide the requested test workflow."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "TechTalks Debug"
+  short_description: "Investigate a reproducible software bug through evidence, a foc"
+  default_prompt: "Use $debug to guide the requested debug workflow."
