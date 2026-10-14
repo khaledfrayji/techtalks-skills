@@ -7,12 +7,12 @@ import { packageRoot, skillNames } from '../src/catalog.js';
 let contract;
 for (const name of skillNames) {
   const folder = path.join(packageRoot, 'skills', name);
-  const text = await readFile(path.join(folder, 'SKILL.md'), 'utf8');
+  const text = (await readFile(path.join(folder, 'SKILL.md'), 'utf8')).replace(/\r\n/g, '\n');
   assert.match(text, new RegExp(`^---\\nname: ${name}\\ndescription: ".+"\\n---\\n`));
   assert.ok(text.length < 20000, `Skill too long: ${name}`);
   assert.ok(!text.includes('[TODO'), `Placeholder in ${name}`);
   assert.match(text, /references\/project-contract\.md/);
-  const reference = await readFile(path.join(folder, 'references/project-contract.md'), 'utf8');
+  const reference = (await readFile(path.join(folder, 'references/project-contract.md'), 'utf8')).replace(/\r\n/g, '\n');
   if (contract === undefined) contract = reference;
   else assert.equal(reference, contract, `Shared contract drift: ${name}`);
   const metadata = await readFile(path.join(folder, 'agents/openai.yaml'), 'utf8');

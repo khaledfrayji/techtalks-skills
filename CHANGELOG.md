@@ -2,6 +2,8 @@
 
 ## 0.1.0 - Unreleased
 
+- Accept Windows CRLF and mixed line endings during release validation, with regression coverage and consistent Git checkout endings.
+
 - Ten portable development workflows with shared context conventions and honest tool limitations.
 - One automatic installer for shared agent discovery and Claude Code project skills.
 - Content-hash ownership, conflict protection, selected workflows, dry-run, updates, removal and integrity checks.
